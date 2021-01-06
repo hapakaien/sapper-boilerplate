@@ -13,9 +13,9 @@ before_script:
 pages:
   stage: deploy
   script:
-    - yarn export
+    - APP_PATH=$CI_PROJECT_NAME yarn export --basepath $CI_PROJECT_NAME
   after_script:
-    - mv __sapper__/export public
+    - mv __sapper__/export/$CI_PROJECT_NAME public
   artifacts:
     paths:
       - public/
