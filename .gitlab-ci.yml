@@ -13,7 +13,7 @@ before_script:
 pages:
   stage: deploy
   script:
-    - yarn run export --basepath $CI_PROJECT_NAME
+    - yarn export
   after_script:
     - mv __sapper__/export public
   artifacts:
