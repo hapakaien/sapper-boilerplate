@@ -1,0 +1,23 @@
+stages:
+  - deploy
+
+image: node:lts-alpine
+
+cache:
+  paths:
+    - node_modules/
+
+before_script:
+  - yarn install --frozen-lockfile
+
+pages:
+  stage: deploy
+  script:
+    - yarn export
+  after_script:
+    - mv __sapper__/export public
+  artifacts:
+    paths:
+      - public/
+  only:
+    - main
