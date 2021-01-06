@@ -9,12 +9,7 @@ const dev = NODE_ENV === 'development';
 const url = dev ? '/' : process.env.APP_PATH;
 
 polka() // You can also use Express
-	.use(
-		url,
-		compression({ threshold: 0 }),
-		sirv('static', { dev }),
-		sapper.middleware()
-	)
-	.listen(PORT, err => {
+	.use(url, compression({ threshold: 0 }), sirv('static', { dev }), sapper.middleware())
+	.listen(PORT, (err) => {
 		if (err) console.log('error', err);
 	});
