@@ -15,7 +15,7 @@ pages:
   script:
     - yarn export
   after_script:
-    - mv __sapper__/export/$CI_PROJECT_NAME public
+    - mv __sapper__/export public
   artifacts:
     paths:
       - public/
