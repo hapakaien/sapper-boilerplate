@@ -18,7 +18,7 @@ jobs:
 
       - name: Build container image
         run: |
-          buildah bud -t $CONTAINER_IMAGE_NAME .
+          buildah bud --format=docker -t $CONTAINER_IMAGE_NAME .
       
       - name: Push image to GitHub Container Registry
         run: |
