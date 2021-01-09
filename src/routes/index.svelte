@@ -1,5 +1,4 @@
 <script>
-	import successkid from 'images/successkid.jpg';
 </script>
 
 <style>
@@ -12,7 +11,6 @@
 <h1 class="text-center mx-auto text-5xl sm:text-7xl font-bold uppercase mb-2">Great success!</h1>
 
 <figure class="text-center mx-auto mb-4">
-	<img class="w-full max-w-lg mb-4 mx-auto" alt="Success Kid" src={successkid} />
 	<figcaption>Have fun with Sapper!</figcaption>
 </figure>
 
