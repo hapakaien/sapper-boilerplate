@@ -15,10 +15,12 @@ const mode = process.env.NODE_ENV;
 const dev = mode === 'development';
 const legacy = !!process.env.SAPPER_LEGACY_BUILD;
 
+const { preprocess } = require('./svelte.config');
+
 const onwarn = (warning, onwarn) =>
 	(warning.code === 'MISSING_EXPORT' && /'preload'/.test(warning.message)) ||
 	(warning.code === 'CIRCULAR_DEPENDENCY' && /[/\\]@sapper[/\\]/.test(warning.message)) ||
-	(warning.code === 'THIS_IS_UNDEFINED') ||
+	warning.code === 'THIS_IS_UNDEFINED' ||
 	onwarn(warning);
 
 export default {
@@ -28,46 +30,55 @@ export default {
 		plugins: [
 			replace({
 				'process.browser': true,
-				'process.env.NODE_ENV': JSON.stringify(mode)
+				'process.env.NODE_ENV': JSON.stringify(mode),
 			}),
 			svelte({
 				preprocess: sveltePreprocess(),
 				compilerOptions: {
 					dev,
-					hydratable: true
-				}
+					hydratable: true,
+				},
+				preprocess,
 			}),
 			url({
 				sourceDir: path.resolve(__dirname, 'src/node_modules/images'),
-				publicPath: '/client/'
+				publicPath: '/client/',
 			}),
 			resolve({
 				browser: true,
-				dedupe: ['svelte']
+				dedupe: ['svelte'],
 			}),
 			commonjs(),
 			typescript({ sourceMap: dev }),
 
-			legacy && babel({
-				extensions: ['.js', '.mjs', '.html', '.svelte'],
-				babelHelpers: 'runtime',
-				exclude: ['node_modules/@babel/**'],
-				presets: [
-					['@babel/preset-env', {
-						targets: '> 0.25%, not dead'
-					}]
-				],
-				plugins: [
-					'@babel/plugin-syntax-dynamic-import',
-					['@babel/plugin-transform-runtime', {
-						useESModules: true
-					}]
-				]
-			}),
+			legacy &&
+				babel({
+					extensions: ['.js', '.mjs', '.html', '.svelte'],
+					babelHelpers: 'runtime',
+					exclude: ['node_modules/@babel/**'],
+					presets: [
+						[
+							'@babel/preset-env',
+							{
+								targets: '> 0.25%, not dead',
+							},
+						],
+					],
+					plugins: [
+						'@babel/plugin-syntax-dynamic-import',
+						[
+							'@babel/plugin-transform-runtime',
+							{
+								useESModules: true,
+							},
+						],
+					],
+				}),
 
-			!dev && terser({
-				module: true
-			})
+			!dev &&
+				terser({
+					module: true,
+				}),
 		],
 
 		preserveEntrySignatures: false,
@@ -75,32 +86,33 @@ export default {
 	},
 
 	server: {
-		input: { server: config.server.input().server.replace(/\.js$/, ".ts") },
+		input: { server: config.server.input().server.replace(/\.js$/, '.ts') },
 		output: config.server.output(),
 		plugins: [
 			replace({
 				'process.browser': false,
-				'process.env.NODE_ENV': JSON.stringify(mode)
+				'process.env.NODE_ENV': JSON.stringify(mode),
 			}),
 			svelte({
 				preprocess: sveltePreprocess(),
 				compilerOptions: {
 					dev,
 					generate: 'ssr',
-					hydratable: true
+					hydratable: true,
 				},
-				emitCss: false
+				emitCss: false,
+				preprocess,
 			}),
 			url({
 				sourceDir: path.resolve(__dirname, 'src/node_modules/images'),
 				publicPath: '/client/',
-				emitFiles: false // already emitted by client build
+				emitFiles: false, // already emitted by client build
 			}),
 			resolve({
-				dedupe: ['svelte']
+				dedupe: ['svelte'],
 			}),
 			commonjs(),
-			typescript({ sourceMap: dev })
+			typescript({ sourceMap: dev }),
 		],
 		external: Object.keys(pkg.dependencies).concat(require('module').builtinModules),
 
@@ -115,14 +127,14 @@ export default {
 			resolve(),
 			replace({
 				'process.browser': true,
-				'process.env.NODE_ENV': JSON.stringify(mode)
+				'process.env.NODE_ENV': JSON.stringify(mode),
 			}),
 			commonjs(),
 			typescript({ sourceMap: dev }),
-			!dev && terser()
+			!dev && terser(),
 		],
 
 		preserveEntrySignatures: false,
 		onwarn,
-	}
+	},
 };
