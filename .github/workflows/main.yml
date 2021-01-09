@@ -19,7 +19,6 @@ jobs:
       - name: Prepare
         id: prep
         run: |
-          CONTAINER_IMAGE=$CONTAINER_IMAGE_NAME
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
           if [ "${{ github.event_name }}" = "schedule" ]; then
             VERSION=nightly
@@ -33,13 +32,13 @@ jobs:
           elif [[ $GITHUB_REF == refs/pull/* ]]; then
             VERSION=pr-${{ github.event.number }}
           fi
-          TAGS="${CONTAINER_IMAGE}:${VERSION}"
+          TAGS="${CONTAINER_IMAGE_NAME}:${VERSION}"
           if [[ $VERSION =~ ^v[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
             MINOR=${VERSION%.*}
             MAJOR=${MINOR%.*}
-            TAGS="$TAGS,${CONTAINER_IMAGE}:${MINOR},${CONTAINER_IMAGE}:${MAJOR},${CONTAINER_IMAGE}:latest"
+            TAGS="$TAGS,${CONTAINER_IMAGE_NAME}:${MINOR},${CONTAINER_IMAGE_NAME}:${MAJOR},${CONTAINER_IMAGE_NAME}:latest"
           elif [ "${{ github.event_name }}" = "push" ]; then
-            TAGS="$TAGS,${CONTAINER_IMAGE}:sha-${GITHUB_SHA::8}"
+            TAGS="$TAGS,${CONTAINER_IMAGE_NAME}:sha-${GITHUB_SHA::8}"
           fi
           echo ::set-output name=version::${VERSION}
           echo ::set-output name=tags::${TAGS}
@@ -47,16 +46,7 @@ jobs:
 
       - name: Build container image
         run: |
-          # Strip git ref prefix from version
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-
-          # Strip "v" prefix from tag name
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-
-          # Use Docker `latest` tag convention
-          [ "$VERSION" == "$default-branch" ] && VERSION=latest
-
-          buildah bud --format=docker \
+          buildah bud --format="docker" \
             --label org.opencontainers.image.title="$CONTAINER_IMAGE_NAME" \
             --label org.opencontainers.image.description="${{ github.event.repository.description }}" \
             --label org.opencontainers.image.url="${{ github.event.repository.html_url }}" \
@@ -69,6 +59,9 @@ jobs:
       - name: Push image to GitHub Container Registry
         run: |
           echo ${{ secrets.CR_PAT }} | buildah login -u ${{ github.actor }} --password-stdin $GH_CONTAINER_IMAGE_REGISTRY
+
+          TAGS=${{ steps.prep.outputs.tags }}
+          echo $TAGS
   
-          buildah tag $CONTAINER_IMAGE_NAME $GH_CONTAINER_IMAGE_REGISTRY/${{ steps.prep.outputs.tags }}
-          buildah push $GH_CONTAINER_IMAGE_REGISTRY/${{ steps.prep.outputs.tags }}
+          buildah tag $CONTAINER_IMAGE_NAME $GH_CONTAINER_IMAGE_REGISTRY/$CONTAINER_IMAGE_NAME:latest
+          buildah push $GH_CONTAINER_IMAGE_REGISTRY/$CONTAINER_IMAGE_NAME:latest
