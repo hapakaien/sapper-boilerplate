@@ -29,10 +29,23 @@ jobs:
             --label org.opencontainers.image.licenses="${{ github.event.repository.license.spdx_id }}" \
             -t $CONTAINER_IMAGE_NAME .
 
-      - name: Push To GitHub Registry
+      - name: Push to GitHub Registry
         uses: redhat-actions/push-to-registry@v1
         with:
           image: $CONTAINER_IMAGE_NAME
           registry: $GH_CONTAINER_IMAGE_REGISTRY
           username: ${{ github.actor }}
           password: ${{ secrets.CR_PAT }}
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: superfly/flyctl-actions@master
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        with:
+          args: "deploy"
