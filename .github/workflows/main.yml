@@ -46,7 +46,7 @@ jobs:
 
       - name: Build container image
         run: |
-          buildah bud --format="docker" \
+          buildah bud --format=docker \
             --label org.opencontainers.image.title="$CONTAINER_IMAGE_NAME" \
             --label org.opencontainers.image.description="${{ github.event.repository.description }}" \
             --label org.opencontainers.image.url="${{ github.event.repository.html_url }}" \
@@ -54,7 +54,8 @@ jobs:
             --label org.opencontainers.image.version="${{ steps.prep.outputs.version }}" \
             --label org.opencontainers.image.created="${{ steps.prep.outputs.created }}" \
             --label org.opencontainers.image.revision="${{ github.sha }}" \
-            --label org.opencontainers.image.licenses="${{ github.event.repository.license.spdx_id }}" \ -t $CONTAINER_IMAGE_NAME .
+            --label org.opencontainers.image.licenses="${{ github.event.repository.license.spdx_id }}" \
+            -t $CONTAINER_IMAGE_NAME .
       
       - name: Push image to GitHub Container Registry
         run: |
