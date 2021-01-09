@@ -30,12 +30,11 @@ jobs:
             -t $CONTAINER_IMAGE_NAME .
 
       - name: Push to GitHub Registry
-        uses: redhat-actions/push-to-registry@v1
-        with:
-          image: $CONTAINER_IMAGE_NAME
-          registry: $GH_CONTAINER_IMAGE_REGISTRY
-          username: ${{ github.actor }}
-          password: ${{ secrets.CR_PAT }}
+        run: |
+          echo ${{ secrets.CR_PAT }} | buildah login -u ${{ github.actor }} --password-stdin $GH_CONTAINER_IMAGE_REGISTRY
+
+          buildah tag $CONTAINER_IMAGE_NAME $GH_CONTAINER_IMAGE_REGISTRY/$CONTAINER_IMAGE_NAME:latest
+          buildah push $GH_CONTAINER_IMAGE_REGISTRY/$CONTAINER_IMAGE_NAME:latest
 
   deploy:
     name: Deploy
