@@ -1,0 +1,33 @@
+name: CI
+
+on: push
+
+env:
+  CONTAINER_IMAGE_NAME: ${{ github.repository }}
+  GH_CONTAINER_IMAGE_REGISTRY: ghcr.io
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+  
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build container image
+        run: |
+          buildah bud -t $CONTAINER_IMAGE_NAME .
+      
+      - name: Push image to GitHub Container Registry
+        run: |
+          echo ${{ secrets.CR_PAT }} | buildah login -u ${{ github.actor }} --password-stdin $GH_CONTAINER_IMAGE_REGISTRY
+  
+          buildah tag $CONTAINER_IMAGE_NAME $GH_CONTAINER_IMAGE_REGISTRY/$CONTAINER_IMAGE_NAME:latest
+          buildah push $GH_CONTAINER_IMAGE_REGISTRY/$CONTAINER_IMAGE_NAME:latest
+    
+      - name: Ping FeaturePeek
+        run: bash <(curl -s https://peek.run/ci) -p $GH_CONTAINER_IMAGE_REGISTRY/$CONTAINER_IMAGE_NAME:latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
