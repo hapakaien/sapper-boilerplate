@@ -26,8 +26,3 @@ jobs:
   
           buildah tag $CONTAINER_IMAGE_NAME $GH_CONTAINER_IMAGE_REGISTRY/$CONTAINER_IMAGE_NAME:latest
           buildah push $GH_CONTAINER_IMAGE_REGISTRY/$CONTAINER_IMAGE_NAME:latest
-    
-      - name: Ping FeaturePeek
-        run: bash <(curl -s https://peek.run/ci) -p $GH_CONTAINER_IMAGE_REGISTRY/$CONTAINER_IMAGE_NAME:latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
